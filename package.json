@@ -1,0 +1,14 @@
+{
+  "name": "@trkbt10/json-schema-type-inferrer",
+  "version": "0.0.0",
+  "types": "./src/json-schema-type-inferrer.d.ts",
+  "keywords": [
+    "JSON Schema",
+    "Typescript"
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "tsc": "^2.0.4",
+    "typescript": "^4.5.5"
+  }
+}

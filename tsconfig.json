@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "outDir": "lib",
+    "lib": ["ES2020"],
+    "composite": true,
+    "strict": true,
+    "strictNullChecks": true
+  },
+  "include": ["./src/**/*.ts", "./examples/**/*.ts"]
+}
