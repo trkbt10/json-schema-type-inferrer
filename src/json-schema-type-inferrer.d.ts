@@ -32,6 +32,15 @@ type InferNumberSchema<T, E = unknown> = T extends {
 }
   ? number
   : E;
+type InferAnySchema<T> = T extends {
+  length: number;
+}
+  ? any
+  : T extends true
+  ? any
+  : T extends false
+  ? never
+  : T;
 type InferBooleanSchema<T, E = unknown> = T extends {
   type: "boolean";
 }
@@ -185,7 +194,10 @@ type InferJSONSchemaType<
       T,
       InferStringSchema<
         T,
-        InferNumberSchema<T, InferObjectSchema<T, B, InferArraySchema<T, B, E>>>
+        InferNumberSchema<
+          T,
+          InferObjectSchema<T, B, InferArraySchema<InferAnySchema<T>, B, E>>
+        >
       >
     >
   >
