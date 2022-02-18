@@ -146,17 +146,22 @@ type InferReferenceSchema<T, Base extends {}, E = unknown> = T extends {
     : E
   : E;
 
-type InferTupleSchema<T extends any[]> = T extends [infer U, ...infer U2]
-  ? [InferJSONSchema<U>, ...InferTupleSchema<U2>]
+type InferTupleSchema<T extends any[], Base extends {}> = T extends [
+  infer U,
+  ...infer U2
+]
+  ? [InferJSONSchemaType<U, Base>, ...InferTupleSchema<U2, Base>]
   : [];
-type InferArraySchema<T, E = unknown> = T extends {
+type InferArraySchema<T, Base extends {}, E = unknown> = T extends {
   type: "array";
 }
   ? T extends { items: infer I }
-    ? I extends { type: string }
-      ? InferJSONSchema<I>[]
+    ? I extends { $ref: string }
+      ? InferJSONSchemaType<I, Base>[]
+      : I extends { type: string }
+      ? InferJSONSchemaType<I, Base>[]
       : I extends [...any]
-      ? InferTupleSchema<I>
+      ? InferTupleSchema<I, Base>
       : E
     : E
   : E;
@@ -173,7 +178,7 @@ type InferJSONSchemaType<
     B,
     InferStringSchema<
       T,
-      InferNumberSchema<T, InferObjectSchema<T, B, InferArraySchema<T, E>>>
+      InferNumberSchema<T, InferObjectSchema<T, B, InferArraySchema<T, B, E>>>
     >
   >
 >;
