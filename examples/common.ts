@@ -17,3 +17,8 @@ const allowAll2: InferJSONSchema<true> = "ok";
 
 // @ts-expect-error
 const denyAll: InferJSONSchema<false> = "false";
+
+const nullSchema: InferJSONSchema<{ type: "null" }> = null;
+
+// @ts-expect-error
+const nullSchema2: InferJSONSchema<{ type: "null" }> = "null";

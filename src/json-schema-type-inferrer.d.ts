@@ -41,6 +41,11 @@ type InferAnySchema<T> = T extends {
   : T extends false
   ? never
   : T;
+type InferNullSchema<T, E = unknown> = T extends {
+  type: "null";
+}
+  ? null
+  : E;
 type InferBooleanSchema<T, E = unknown> = T extends {
   type: "boolean";
 }
@@ -192,11 +197,14 @@ type InferJSONSchemaType<
     B,
     InferBooleanSchema<
       T,
-      InferStringSchema<
+      InferNullSchema<
         T,
-        InferNumberSchema<
+        InferStringSchema<
           T,
-          InferObjectSchema<T, B, InferArraySchema<InferAnySchema<T>, B, E>>
+          InferNumberSchema<
+            T,
+            InferObjectSchema<T, B, InferArraySchema<InferAnySchema<T>, B, E>>
+          >
         >
       >
     >
