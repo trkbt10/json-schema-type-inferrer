@@ -1,17 +1,15 @@
 import {
-  InferTupleItemSchema,
-  InferDefaultValue,
-  InferForValidationSchema,
-  InferNullable,
-  InferObjectSchema,
-  InferReferenceSchema,
   InferBooleanSchema,
   InferEnumDef,
+  InferForValidationSchema,
   InferNullSchema,
   InferNumberSchema,
+  InferObjectSchema,
+  InferReferenceSchema,
   InferStringSchema,
+  InferTupleItemSchema,
 } from "./json-schema-draft-04";
-import { WithSchemaConditions } from "./json-schema-draft-06";
+import { WithSchemaConditions } from "./json-schema-draft-07";
 import { Mutable } from "./utilities";
 /**
  * {@link https://json-schema.org/draft/2020-12/release-notes.html}
