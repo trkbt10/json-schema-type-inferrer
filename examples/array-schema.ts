@@ -10,7 +10,7 @@ const array: InferJSONSchema<typeof arraySchema> = ["item"];
 
 const tupleSchema = {
   type: "array",
-  items: [
+  prefixItems: [
     {
       type: "string",
     },
@@ -36,7 +36,7 @@ const array2: InferJSONSchema<typeof containingRefsArraySchema> = ["item"];
 
 const containingRefsTupleSchema = {
   type: "array",
-  items: [
+  prefixItems: [
     {
       $ref: "#/$defs/a",
     },

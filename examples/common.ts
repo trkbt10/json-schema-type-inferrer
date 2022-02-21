@@ -1,4 +1,4 @@
-import { InferJSONSchema } from "../src/json-schema-type-inferrer";
+import type { InferJSONSchema } from "../src/json-schema-type-inferrer";
 // Annotations
 type Annotations = InferJSONSchema<{
   type: "string";
@@ -11,9 +11,6 @@ type Annotations = InferJSONSchema<{
   deprecated: true;
 }>;
 const annotation: Annotations = "string";
-
-const allowAll: InferJSONSchema<{}> = "ok";
-const allowAll2: InferJSONSchema<true> = "ok";
 
 // @ts-expect-error
 const denyAll: InferJSONSchema<false> = "false";

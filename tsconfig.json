@@ -4,7 +4,12 @@
     "lib": ["ES2020"],
     "composite": true,
     "strict": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "resolveJsonModule": true
   },
-  "include": ["./src/**/*.ts", "./examples/**/*.ts"]
+  "include": [
+    "./src/**/*.ts",
+    "./__tests__/**/*.(ts|json)",
+    "./examples/**/*.ts"
+  ]
 }
