@@ -23,20 +23,20 @@ export type WithSchemaConditions<S, T> = InferConstantValue<
   S,
   InferDefaultValue<S, InferNullable<S, T>>
 >;
-export type InferJSONSchemaType<T, B extends {}> = WithSchemaConditions<
+export type InferJSONSchemaType<T, B = {}, R = B> = WithSchemaConditions<
   T,
-  | InferForValidationSchema<T, B>
+  | InferForValidationSchema<T, B, R>
   | InferPrimitiveJSONSchemaType<T>
-  | InferObjectSchema<T, B>
-  | InferArraySchema<T, B>
-  | InferReferenceSchema<T, B>
+  | InferObjectSchema<T, B, R>
+  | InferArraySchema<T, B, R>
+  | InferReferenceSchema<T, B, R>
 >;
-export type InferJSONSchemaDraft06<T> = T extends {}
-  ? InferJSONSchemaType<Mutable<T>, Mutable<T>>
+export type InferJSONSchemaDraft06<T, R = T> = T extends {}
+  ? InferJSONSchemaType<Mutable<T>, Mutable<T>, R>
   : {};
 
-export type InferJSONSchemaVersionDraft06<T, E> = T extends {
+export type InferJSONSchemaVersionDraft06<T, R, E> = T extends {
   $schema: `${infer P}://json-schema.org/draft-06/schema${infer P}`;
 }
-  ? InferJSONSchemaType<Mutable<T>, Mutable<T>>
+  ? InferJSONSchemaType<Mutable<T>, Mutable<T>, R>
   : E;

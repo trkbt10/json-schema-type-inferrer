@@ -13,8 +13,7 @@ describe("ReferenceSchema", () => {
       $ref: "#/definitions/text",
     },
   } as const;
-  type Schema = Mutable<typeof schema>;
-  type TextSchema = InferJSONSchema<Schema>;
+  type TextSchema = InferJSONSchema<typeof schema>;
   it("string type", () => {
     const type: TextSchema = ["string"];
   });

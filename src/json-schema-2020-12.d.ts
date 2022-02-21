@@ -15,25 +15,30 @@ import { Mutable } from "./utilities";
  * {@link https://json-schema.org/draft/2020-12/release-notes.html}
  */
 
-export type InferTupleSchema<T, B = {}> =
+export type InferTupleSchema<T, B = {}, Root = B> =
   // Infer tuple
   T extends {
     prefixItems: [...infer U];
   }
     ? // Closed tuple
       T extends { items: false }
-      ? InferTupleItemSchema<U, B>
+      ? InferTupleItemSchema<U, B, Root>
       : // Tuple with constrained additional items
       T extends { items: infer A }
-      ? [...InferTupleItemSchema<U, B>, InferJSONSchemaType<A, B>]
-      : [...InferTupleItemSchema<U, B>, ...any[]]
+      ? [...InferTupleItemSchema<U, B, Root>, InferJSONSchemaType<A, B, Root>]
+      : [...InferTupleItemSchema<U, B, Root>, ...any[]]
     : never;
-export type InferArraySchema<T, Base extends {}, E = never> = T extends {
+export type InferArraySchema<
+  T,
+  Base extends {},
+  Root = Base,
+  E = never
+> = T extends {
   type: "array";
 }
   ? T extends { items: infer I }
     ? I extends {}
-      ? InferJSONSchemaType<I, Base>[]
+      ? InferJSONSchemaType<I, Base, Root>[]
       : E
     : E
   : E;
@@ -56,17 +61,21 @@ export type InferPrimitiveJSONSchemaType<T> =
   | InferStringSchema<T>
   | InferNumberSchema<T>
   | InferNullSchema<T>;
-export type InferJSONSchemaType<T, B extends {}> = WithSchemaConditions<
+export type InferJSONSchemaType<T, B = T, Root = B> = WithSchemaConditions<
   T,
-  | InferForValidationSchema<T, B>
+  | InferForValidationSchema<T, B, Root>
   | InferPrimitiveJSONSchemaType<T>
-  | InferObjectSchema<T, B>
-  | InferTupleSchema<T, B>
-  | InferArraySchema<T, B>
-  | InferReferenceSchema<T, B>
+  | InferObjectSchema<T, B, Root>
+  | InferTupleSchema<T, B, Root>
+  | InferArraySchema<T, B, Root>
+  | InferReferenceSchema<T, B, Root>
 >;
-export type InferJSONSchemaVersionDraft2020_12<T, E> = T extends {
+export type InferJSONSchemaVersionDraft2020_12<
+  T,
+  Root = {},
+  E = never
+> = T extends {
   $schema: `${infer P}://json-schema.org/draft/2020-12/schema${infer Q}`;
 }
-  ? InferJSONSchemaType<Mutable<T>, Mutable<T>>
+  ? InferJSONSchemaType<Mutable<T>, Mutable<T>, Root>
   : E;

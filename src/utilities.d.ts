@@ -3,6 +3,14 @@ export type Unpacked<T> = T extends (infer U)[] ? U : T;
 export type Mutable<T> = {
   -readonly [K in keyof T]: Mutable<T[K]>;
 };
+export type Join<T extends any[], S extends string> = T extends [
+  infer U,
+  ...infer U2
+]
+  ? U extends string
+    ? `${U}${S}${Join<U2, S>}`
+    : ""
+  : "";
 
 export type Split<
   S extends string,
@@ -26,4 +34,8 @@ export type Get<
   ? U2 extends string[]
     ? Get<GetByKey<O, U>, U2>
     : never
+  : never;
+
+export type DropLastIndex<T extends string[]> = T extends [...infer U, infer V]
+  ? U
   : never;

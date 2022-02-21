@@ -1,4 +1,11 @@
-import { Unpacked, Get, Split, Mutable } from "./utilities";
+import {
+  Unpacked,
+  Get,
+  Split,
+  Mutable,
+  Join,
+  DropLastIndex,
+} from "./utilities";
 
 export type InferNumberSchema<T, E = never> = T extends {
   type: "number" | "integer";
@@ -34,22 +41,24 @@ export type InferStringSchema<T, E = never> = T extends { type: "string" }
 export type InferObjectPropertiesSchemaType<
   T,
   Base extends {},
+  Root extends {},
   E = never
 > = T extends {
   [key: string]: any;
 }
-  ? { [K in keyof T]: InferJSONSchemaType<T[K], Base> }
+  ? { [K in keyof T]: InferJSONSchemaType<T[K], Base, Root> }
   : E;
 
 export type InferAdditionalPropertiesSchema<
   T extends {} | boolean,
   Base extends {},
+  Root extends {},
   E = never
 > = T extends boolean
   ? T extends true
     ? { [key: string]: any }
     : {}
-  : { [key: string]: InferJSONSchemaType<T, Base> };
+  : { [key: string]: InferJSONSchemaType<T, Base, Root> };
 
 export type InferRequiredProperties<T extends {}, Required extends keyof T> = {
   [R in Required]: T[R];
@@ -77,7 +86,12 @@ export type InferObjectPropertiesSchema<
     : {}
   : E;
 
-export type InferObjectSchema<T, Base extends {}, E = never> = T extends {
+export type InferObjectSchema<
+  T,
+  Base extends {},
+  Root extends {},
+  E = never
+> = T extends {
   type: "object";
   properties?: infer P;
   additionalProperties?: infer AP;
@@ -86,30 +100,66 @@ export type InferObjectSchema<T, Base extends {}, E = never> = T extends {
       | InferObjectPropertiesSchema<T, Base>
       | InferAdditionalPropertiesSchema<AP, Base, E>
   : E;
-export type InferReferenceSchema<T, Base extends {}, E = never> = T extends {
+export type GetObjectByLocalPath<T, K> = T extends {}
+  ? K extends `/${infer P}`
+    ? Get<T, Split<P>>
+    : never
+  : never;
+export type GetObjectByPath<T, Root extends {}> = T extends string
+  ? T extends `${infer B}#${infer L}`
+    ? GetObjectByLocalPath<Get<Root, [B]>, L>
+    : never
+  : never;
+
+export type InferReferenceSchema<
+  T,
+  Base extends {},
+  Root extends {},
+  E = never
+> = T extends {
   $ref: infer R;
 }
   ? R extends "#"
-    ? InferJSONSchemaType<Base, Base>
-    : R extends `#/${infer U}`
-    ? InferJSONSchemaType<Get<Base, Split<U>>, Base>
-    : E
+    ? InferJSONSchemaType<Base, Base, Root>
+    : InferJSONSchemaType<
+        GetObjectByPath<ComposeRefTargetURIFromSchema<T, Base>, Root>,
+        Base
+      >
   : E;
 
-export type InferTupleItemSchema<T extends any[], Base extends {}> = T extends [
-  infer U,
-  ...infer U2
-]
-  ? [InferJSONSchemaType<U, Base>, ...InferTupleItemSchema<U2, Base>]
+export type ComposeRefTargetURIFromSchema<T, B> = T extends {
+  $ref: `${infer P}`;
+}
+  ? B extends { $id: infer Id }
+    ? Id extends string
+      ? `${Join<DropLastIndex<Split<Id, "/">>, "/">}${P}`
+      : P
+    : P
+  : unknown;
+
+export type InferTupleItemSchema<
+  T extends any[],
+  Base extends {},
+  Root extends {}
+> = T extends [infer U, ...infer U2]
+  ? [
+      InferJSONSchemaType<U, Base, Root>,
+      ...InferTupleItemSchema<U2, Base, Root>
+    ]
   : [];
-export type InferArraySchema<T, Base extends {}, E = never> = T extends {
+export type InferArraySchema<
+  T,
+  Base extends {},
+  Root extends {},
+  E = never
+> = T extends {
   type: "array";
 }
   ? T extends { items: infer I }
     ? I extends {}
-      ? InferJSONSchemaType<I, Base>[]
+      ? InferJSONSchemaType<I, Base, Root>[]
       : I extends [...any]
-      ? InferTupleItemSchema<I, Base>
+      ? InferTupleItemSchema<I, Base, Root>
       : E
     : E
   : E;
@@ -139,61 +189,86 @@ export type ConcatTypes<T extends any[]> = T extends [infer U, ...infer U2]
   : {};
 export type MapForAllOfProperties<
   T extends any[],
-  Base extends {}
-> = InferJSONSchemaType<ConcatTypes<T>, Base>;
+  Base extends {},
+  Root extends {}
+> = InferJSONSchemaType<ConcatTypes<T>, Base, Root>;
 export type MapForAnyOfProperties<
   T extends any[],
-  Base extends {}
+  Base extends {},
+  Root extends {}
 > = T extends [infer U, ...infer U2]
-  ? InferJSONSchemaType<U, Base> | MapForAnyOfProperties<U2, Base>
+  ? InferJSONSchemaType<U, Base, Root> | MapForAnyOfProperties<U2, Base, Root>
   : never;
 export type MapForOneOfProperties<
   T extends any[],
-  Base extends {}
+  Base extends {},
+  Root extends {}
 > = T extends [infer U, ...infer U2]
-  ? InferJSONSchemaType<U, Base> | MapForOneOfProperties<U2, Base>
+  ? InferJSONSchemaType<U, Base, Root> | MapForOneOfProperties<U2, Base, Root>
   : never;
 
-export type InferForValidationSchema<T extends {}, Base extends {}> =
+export type InferForValidationSchema<
+  T extends {},
+  Base extends {},
+  Root extends {}
+> =
   | (T extends {
       allOf: any[];
     }
-      ? MapForAllOfProperties<T["allOf"], Base>
+      ? MapForAllOfProperties<T["allOf"], Base, Root>
       : never)
   | (T extends {
       anyOf: any[];
     }
-      ? MapForAnyOfProperties<T["anyOf"], Base>
+      ? MapForAnyOfProperties<T["anyOf"], Base, Root>
       : never)
   | (T extends {
       oneOf: any[];
     }
-      ? MapForOneOfProperties<T["oneOf"], Base>
+      ? MapForOneOfProperties<T["oneOf"], Base, Root>
       : never);
 
 export type InferDefaultValue<T, V> = T extends { default: infer D }
   ? V | D
   : V;
-export type InferJSONSchemaType<T, B extends {}> = InferDefaultValue<
+export type InferJSONSchemaType<
+  T extends {},
+  Base extends {},
+  Root = Base
+> = InferDefaultValue<
   T,
   InferNullable<
     T,
-    | InferForValidationSchema<T, B>
+    | InferForValidationSchema<T, Base, Root>
     | InferPrimitiveJSONSchemaType<T>
-    | InferObjectSchema<T, B>
-    | InferArraySchema<T, B>
-    | InferReferenceSchema<T, B>
+    | InferObjectSchema<T, Base, Root>
+    | InferArraySchema<T, Base, Root>
+    | InferReferenceSchema<T, Base, Root>
   >
 >;
-type InferJSONSchema<T extends any> = InferJSONSchemaType<
+export type InferJSONSchema<T extends any, R = T> = InferJSONSchemaType<
   Mutable<T>,
-  Mutable<T>
+  Mutable<T>,
+  R extends any[]
+    ? ConcatJSONSchemas<T extends { $id: string } ? [...R, T] : R>
+    : R extends {}
+    ? Mutable<R>
+    : never
 >;
 
-export type InferJSONSchemaDraft04<T> = T extends {} ? InferJSONSchema<T> : {};
+export type InferJSONSchemaDraft04<T, R = T> = T extends {}
+  ? InferJSONSchema<T, R>
+  : {};
 
-export type InferJSONSchemaVersionDraft04<T, E> = T extends {
+export type ConcatJSONSchemas<T extends { $id: string }[]> = T extends [
+  infer A,
+  ...infer B
+]
+  ? (A extends { $id: string } ? { [K in A["$id"]]: Mutable<A> } : {}) &
+      (B extends any[] ? ConcatJSONSchemas<B> : {})
+  : {};
+export type InferJSONSchemaVersionDraft04<T, R extends {}, E> = T extends {
   $schema: `${infer P}://json-schema.org/draft-04/schema${infer P}`;
 }
-  ? InferJSONSchemaType<Mutable<T>, Mutable<T>>
+  ? InferJSONSchemaDraft04<T, R>
   : E;

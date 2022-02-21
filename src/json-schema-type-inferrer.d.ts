@@ -13,13 +13,18 @@ export {
   InferJSONSchemaVersionDraft06,
   InferJSONSchemaVersionDraft07,
 };
-export type InferJSONSchema<T> = InferJSONSchemaVersionDraft2020_12<
-  T,
-  InferJSONSchemaVersionDraft07<
+export type ResolveJSONSchemaInferrerBy$Schema<T, R> =
+  InferJSONSchemaVersionDraft2020_12<
     T,
-    InferJSONSchemaVersionDraft04<
+    R,
+    InferJSONSchemaVersionDraft07<
       T,
-      InferJSONSchemaType<Mutable<T>, Mutable<T>>
+      R,
+      InferJSONSchemaVersionDraft04<T, R, InferJSONSchemaType<T, T, R>>
     >
-  >
+  >;
+
+export type InferJSONSchema<T, R = {}> = ResolveJSONSchemaInferrerBy$Schema<
+  Mutable<T>,
+  Mutable<R>
 >;
