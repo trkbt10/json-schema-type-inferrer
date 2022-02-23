@@ -1,4 +1,11 @@
-import type { Unpacked, Get, Split, Join, DropLastIndex } from "./utilities";
+import type {
+  Unpacked,
+  Get,
+  Split,
+  Join,
+  DropLastIndex,
+  Mutable,
+} from "./utilities";
 
 export type InferNumberSchema<T, E = never> = T extends {
   type: "number" | "integer";
@@ -278,7 +285,7 @@ export type ConcatJSONSchemas<T extends { $id: string }[]> = T extends [
   infer A,
   ...infer B
 ]
-  ? (A extends { $id: string } ? { [K in A["$id"]]: A } : {}) &
+  ? (A extends { $id: string } ? { [K in A["$id"]]: Mutable<A> } : {}) &
       (B extends any[] ? ConcatJSONSchemas<B> : {})
   : {};
 export type InferJSONSchemaVersionDraft04<T, R extends {}, E> = T extends {
