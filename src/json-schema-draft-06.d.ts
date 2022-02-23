@@ -12,7 +12,6 @@ import type {
   InferPrimitiveJSONSchemaType,
   InferReferenceSchema,
 } from "./json-schema-draft-04";
-import type { Mutable } from "./utilities";
 
 export type InferExampleValues<T, V> = T extends { example: infer E }
   ? E | V
@@ -32,11 +31,11 @@ export type InferJSONSchemaType<T, B = {}, R = B> = WithSchemaConditions<
   | InferReferenceSchema<T, B, R>
 >;
 export type InferJSONSchemaDraft06<T, R = T> = T extends {}
-  ? InferJSONSchemaType<Mutable<T>, Mutable<T>, R>
+  ? InferJSONSchemaType<T, T, R>
   : {};
 
 export type InferJSONSchemaVersionDraft06<T, R, E> = T extends {
   $schema: `${infer P}://json-schema.org/draft-06/schema${infer P}`;
 }
-  ? InferJSONSchemaType<Mutable<T>, Mutable<T>, R>
+  ? InferJSONSchemaType<T, T, R>
   : E;

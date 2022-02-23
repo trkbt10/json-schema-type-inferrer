@@ -1,4 +1,4 @@
-import { InferJSONSchemaVersionDraft2020_12 as InferJSONSchema } from "../../src/json-schema-type-inferrer";
+import { InferJSONSchema } from "../../src/json-schema-type-inferrer";
 import { schema } from "./calender";
 import { schema as cardSchema } from "./card";
 import { schema as geoSchema } from "./geophical";

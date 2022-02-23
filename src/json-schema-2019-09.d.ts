@@ -5,15 +5,12 @@
 
 import type {
   InferArraySchema,
-  InferDefaultValue,
   InferForValidationSchema,
-  InferNullable,
   InferObjectSchema,
   InferPrimitiveJSONSchemaType,
   InferReferenceSchema,
 } from "./json-schema-draft-04";
 import { WithSchemaConditions } from "./json-schema-draft-07";
-import type { Join, Mutable, Split } from "./utilities";
 
 type Deprecated<T> = { __message__: `The property is deprecated.` } | T;
 type InferDeprecatedSchema<T, V> = T extends { deprecated: true }
@@ -33,9 +30,9 @@ export type InferJSONSchemaType<
 >;
 
 export type InferJSONSchema201909<T, Root extends {}> = InferJSONSchemaType<
-  Mutable<T>,
-  Mutable<T>,
-  Mutable<Root>
+  T,
+  T,
+  Root
 >;
 
 export type InferJSONSchemaVersion201909<T, R extends {}, E> = T extends {

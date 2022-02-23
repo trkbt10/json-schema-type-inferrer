@@ -10,7 +10,6 @@ import {
   InferTupleItemSchema,
 } from "./json-schema-draft-04";
 import { WithSchemaConditions } from "./json-schema-draft-07";
-import { Mutable } from "./utilities";
 /**
  * {@link https://json-schema.org/draft/2020-12/release-notes.html}
  */
@@ -77,5 +76,5 @@ export type InferJSONSchemaVersionDraft2020_12<
 > = T extends {
   $schema: `${infer P}://json-schema.org/draft/2020-12/schema${infer Q}`;
 }
-  ? InferJSONSchemaType<Mutable<T>, Mutable<T>, Root>
+  ? InferJSONSchemaType<T, T, Root>
   : E;

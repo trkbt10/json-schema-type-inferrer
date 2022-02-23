@@ -1,11 +1,4 @@
-import {
-  Unpacked,
-  Get,
-  Split,
-  Mutable,
-  Join,
-  DropLastIndex,
-} from "./utilities";
+import type { Unpacked, Get, Split, Join, DropLastIndex } from "./utilities";
 
 export type InferNumberSchema<T, E = never> = T extends {
   type: "number" | "integer";
@@ -100,6 +93,26 @@ export type InferObjectSchema<
       | InferObjectPropertiesSchema<T, Base>
       | InferAdditionalPropertiesSchema<AP, Base, E>
   : E;
+export type InferDependentRequired<T, V> = T extends {
+  properties: {};
+  dependentRequired: {};
+}
+  ? T["dependentRequired"] extends {
+      [key in keyof Partial<T["properties"]>]: (infer DK)[];
+    }
+    ? DK extends keyof T["properties"]
+      ?
+          | ({
+              [K in keyof T["dependentRequired"]]: V[K];
+            } & {
+              [K2 in DK]: V[DK];
+            })
+          | {
+              [K in keyof T["dependentRequired"]]: V[K];
+            }
+      : V
+    : V
+  : V;
 export type GetObjectByLocalPath<T, K> = T extends {}
   ? K extends `/${infer P}`
     ? Get<T, Split<P>>
@@ -241,18 +254,18 @@ export type InferJSONSchemaType<
     T,
     | InferForValidationSchema<T, Base, Root>
     | InferPrimitiveJSONSchemaType<T>
-    | InferObjectSchema<T, Base, Root>
+    | InferDependentRequired<T, InferObjectSchema<T, Base, Root>>
     | InferArraySchema<T, Base, Root>
     | InferReferenceSchema<T, Base, Root>
   >
 >;
-export type InferJSONSchema<T extends any, R = T> = InferJSONSchemaType<
-  Mutable<T>,
-  Mutable<T>,
+export type InferJSONSchema<T, R = T> = InferJSONSchemaType<
+  T,
+  T,
   R extends any[]
     ? ConcatJSONSchemas<T extends { $id: string } ? [...R, T] : R>
     : R extends {}
-    ? Mutable<R>
+    ? R
     : never
 >;
 
@@ -264,7 +277,7 @@ export type ConcatJSONSchemas<T extends { $id: string }[]> = T extends [
   infer A,
   ...infer B
 ]
-  ? (A extends { $id: string } ? { [K in A["$id"]]: Mutable<A> } : {}) &
+  ? (A extends { $id: string } ? { [K in A["$id"]]: A } : {}) &
       (B extends any[] ? ConcatJSONSchemas<B> : {})
   : {};
 export type InferJSONSchemaVersionDraft04<T, R extends {}, E> = T extends {
