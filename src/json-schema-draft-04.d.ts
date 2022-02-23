@@ -96,20 +96,20 @@ export type InferObjectSchema<
   : E;
 export type InferDependentRequired<T, V> = T extends {
   properties: {};
-  dependentRequired: {};
+  dependencies: {};
 }
-  ? T["dependentRequired"] extends {
+  ? T["dependencies"] extends {
       [key in keyof Partial<T["properties"]>]: (infer DK)[];
     }
     ? DK extends keyof T["properties"]
       ?
           | ({
-              [K in keyof T["dependentRequired"]]: V[K];
+              [K in keyof T["dependencies"]]: V[K];
             } & {
               [K2 in DK]: V[DK];
             })
           | {
-              [K in keyof T["dependentRequired"]]: V[K];
+              [K in keyof T["dependencies"]]: V[K];
             }
       : V
     : V

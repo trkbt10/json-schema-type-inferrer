@@ -11,10 +11,31 @@ import type {
   InferReferenceSchema,
 } from "./json-schema-draft-04";
 import { WithSchemaConditions } from "./json-schema-draft-07";
+import { InferObjectPropertiesSchema } from "./json-schema-draft-04";
 
 type Deprecated<T> = { __message__: `The property is deprecated.` } | T;
 type InferDeprecatedSchema<T, V> = T extends { deprecated: true }
   ? Deprecated<V>
+  : V;
+export type InferDependentRequired<T, V> = T extends {
+  properties: {};
+  dependentRequired: {};
+}
+  ? T["dependentRequired"] extends {
+      [key in keyof Partial<T["properties"]>]: (infer DK)[];
+    }
+    ? DK extends keyof T["properties"]
+      ?
+          | ({
+              [K in keyof T["dependentRequired"]]: V[K];
+            } & {
+              [K2 in DK]: V[DK];
+            })
+          | {
+              [K in keyof T["dependentRequired"]]: V[K];
+            }
+      : V
+    : V
   : V;
 export type InferJSONSchemaType<
   T,
@@ -24,7 +45,7 @@ export type InferJSONSchemaType<
   T,
   | InferForValidationSchema<T, Base, Root>
   | InferPrimitiveJSONSchemaType<T>
-  | InferObjectSchema<T, Base, Root>
+  | InferDependentRequired<T, InferObjectSchema<T, Base, Root>>
   | InferArraySchema<T, Base, Root>
   | InferReferenceSchema<T, Base, Root>
 >;
