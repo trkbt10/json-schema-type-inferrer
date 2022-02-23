@@ -50,7 +50,7 @@ export type InferAdditionalPropertiesSchema<
 > = T extends boolean
   ? T extends true
     ? { [key: string]: any }
-    : {}
+    : E
   : { [key: string]: InferJSONSchemaType<T, Base, Root> };
 
 export type InferRequiredProperties<T extends {}, Required extends keyof T> = {
@@ -65,6 +65,7 @@ export type InferRequiredKeys<
 export type InferObjectPropertiesSchema<
   T,
   Base extends {},
+  Root extends {},
   E = never
 > = T extends {
   properties?: infer P;
@@ -72,10 +73,10 @@ export type InferObjectPropertiesSchema<
   ? P extends { [key: string]: any }
     ? T extends { required: string[] }
       ? InferRequiredProperties<
-          InferObjectPropertiesSchemaType<P, Base, E>,
+          InferObjectPropertiesSchemaType<P, Base, Root, E>,
           InferRequiredKeys<P, T["required"]>
         >
-      : InferObjectPropertiesSchemaType<P, Base, E>
+      : InferObjectPropertiesSchemaType<P, Base, Root, E>
     : {}
   : E;
 
@@ -90,8 +91,8 @@ export type InferObjectSchema<
   additionalProperties?: infer AP;
 }
   ?
-      | InferObjectPropertiesSchema<T, Base>
-      | InferAdditionalPropertiesSchema<AP, Base, E>
+      | InferObjectPropertiesSchema<T, Base, Root, E>
+      | InferAdditionalPropertiesSchema<AP, Base, Root, E>
   : E;
 export type InferDependentRequired<T, V> = T extends {
   properties: {};
