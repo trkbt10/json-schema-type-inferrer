@@ -1,6 +1,6 @@
 {
   "name": "@trkbt10/json-schema-type-inferrer",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "types": "./src/json-schema-type-inferrer.d.ts",
   "keywords": [
     "JSON Schema",
