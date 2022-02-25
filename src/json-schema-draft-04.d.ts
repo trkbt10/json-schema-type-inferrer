@@ -127,7 +127,9 @@ export type GetObjectByLocalPath<T, K> = T extends {}
     : never
   : never;
 export type GetObjectByPath<T, Root extends {}> = T extends string
-  ? T extends `${infer B}#${infer L}`
+  ? T extends `#${infer L}`
+    ? GetObjectByLocalPath<Get<Root, ["#"]>, L>
+    : T extends `${infer B}#${infer L}`
     ? GetObjectByLocalPath<Get<Root, [B]>, L>
     : never
   : never;
@@ -142,9 +144,12 @@ export type InferReferenceSchema<
 }
   ? R extends "#"
     ? InferJSONSchemaType<Base, Base, Root>
+    : R extends `#/${infer P}`
+    ? InferJSONSchemaType<GetObjectByLocalPath<P, Base>, Base, Root>
     : InferJSONSchemaType<
         GetObjectByPath<ComposeRefTargetURIFromSchema<T, Base>, Root>,
-        Base
+        Base,
+        Root
       >
   : E;
 
@@ -255,7 +260,7 @@ export type InferDefaultValue<T, V> = T extends { default: infer D }
 export type InferJSONSchemaType<
   T extends {},
   Base extends {},
-  Root = Base
+  Root = {}
 > = InferDefaultValue<
   T,
   InferNullable<
@@ -267,29 +272,27 @@ export type InferJSONSchemaType<
     | InferReferenceSchema<T, Base, Root>
   >
 >;
+export type ConcatJSONSchemaDefinitions<T, R = T> = R extends any[]
+  ? ConcatJSONSchemas<[...R, T]>
+  : R extends {}
+  ? ConcatJSONSchemas<[R]>
+  : never;
 export type InferJSONSchema<T, R = T> = InferJSONSchemaType<
   T,
   T,
-  R extends any[]
-    ? ConcatJSONSchemas<T extends { $id: string } ? [...R, T] : R>
-    : R extends {}
-    ? R
-    : never
+  ConcatJSONSchemaDefinitions<T, R>
 >;
 
-export type InferJSONSchemaDraft04<T, R = T> = T extends {}
+export type InferJSONSchemaDraft04<T, R = T, E = never> = T extends {}
   ? InferJSONSchema<T, R>
-  : {};
+  : E;
 
-export type ConcatJSONSchemas<T extends { $id: string }[]> = T extends [
-  infer A,
-  ...infer B
-]
+export type ConcatJSONSchemas<T extends {}[]> = T extends [infer A, ...infer B]
   ? (A extends { $id: string } ? { [K in A["$id"]]: Mutable<A> } : {}) &
       (B extends any[] ? ConcatJSONSchemas<B> : {})
   : {};
-export type InferJSONSchemaVersionDraft04<T, R extends {}, E> = T extends {
+export type InferJSONSchemaVersionDraft04<T, R, E> = T extends {
   $schema: `${infer P}://json-schema.org/draft-04/schema${infer P}`;
 }
-  ? InferJSONSchemaDraft04<T, R>
+  ? InferJSONSchemaDraft04<T, R, E>
   : E;

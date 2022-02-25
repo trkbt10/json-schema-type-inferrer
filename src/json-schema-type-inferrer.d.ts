@@ -20,7 +20,7 @@ export type ResolveJSONSchemaInferrerBy$Schema<T, R> =
     InferJSONSchemaVersionDraft07<
       T,
       R,
-      InferJSONSchemaVersionDraft04<T, R, InferJSONSchemaType<T, T, R>>
+      InferJSONSchemaVersionDraft04<T, R, InferJSONSchemaType<T, R, never>>
     >
   >;
 
