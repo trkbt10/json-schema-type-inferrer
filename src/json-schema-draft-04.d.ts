@@ -123,6 +123,8 @@ export type GetObjectByPath<T, Root extends {}> = T extends string
     ? GetObjectByLocalPath<Get<Root, ["#"]>, L>
     : T extends `${infer B}#${infer L}`
     ? GetObjectByLocalPath<Get<Root, [B]>, L>
+    : T extends string
+    ? Get<Root, [T]>
     : never
   : never;
 
@@ -130,12 +132,12 @@ export type InferReferenceSchema<T, Root, E = never> = T extends {
   $ref: infer R;
 }
   ? R extends "#"
-    ? InferJSONSchemaType<GetObjectByLocalPath<"#", Root>>
+    ? InferJSONSchemaType<GetObjectByLocalPath<"#", Root>, Root>
     : R extends `#${infer P}`
-    ? InferJSONSchemaType<GetObjectByPath<`#${P}`, Root>>
+    ? InferJSONSchemaType<GetObjectByPath<`#${P}`, Root>, Root>
     : InferJSONSchemaType<
         GetObjectByPath<
-          ComposeRefTargetURIFromSchema<T, GetObjectByLocalPath<"#", Root>>,
+          ComposeRefTargetURIFromSchema<T, Get<Root, ["#"]>>,
           Root
         >,
         Root

@@ -42,11 +42,7 @@ describe("ReferenceSchema", () => {
     } as const;
     const schemaB = {
       $id: "https://example.com/B",
-      $defs: {
-        B: {
-          type: "string",
-        },
-      },
+      type: "string",
     } as const;
     const localSchema = {
       $id: "https://example.com/C",
@@ -58,12 +54,36 @@ describe("ReferenceSchema", () => {
         ref: {
           $ref: "A#/$defs/A",
         },
+        ref2: {
+          $ref: "B",
+        },
       },
     } as const;
-    type UnifiedJSONSchemas = ConcatJSONSchemaDefinitions<
-      [typeof schemaB, typeof schemaA, typeof localSchema]
-    >;
     type Schema = Mutable<typeof localSchema>;
+    type UnifiedJSONSchemas = ConcatJSONSchemaDefinitions<
+      [typeof schemaB, typeof schemaA]
+    > & { "#": Schema };
+    type RefSchemaExternals = InferReferenceSchema<
+      Schema["properties"]["ref"],
+      UnifiedJSONSchemas
+    >;
+    type ComposedRefTargetURI = ComposeRefTargetURIFromSchema<
+      {
+        $ref: "A#/$defs/A";
+      },
+      UnifiedJSONSchemas["#"]
+    >;
+    type ComposedRefTargetURI2 = ComposeRefTargetURIFromSchema<
+      {
+        $ref: "B";
+      },
+      UnifiedJSONSchemas["#"]
+    >;
+    type ResolcedRef2 = GetObjectByPath<
+      ComposedRefTargetURI2,
+      UnifiedJSONSchemas
+    >;
+    const expectedURI: ComposedRefTargetURI = "https://example.com/A#/$defs/A";
     type RefSchema = InferObjectSchema<Schema, UnifiedJSONSchemas>;
   });
 });
