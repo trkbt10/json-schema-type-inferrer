@@ -259,8 +259,13 @@ export type InferJSONSchemaDraft04<T, Base = T, R = T, E = never> = T extends {}
   ? InferJSONSchema<T, Base, R>
   : E;
 
-export type InferJSONSchemaVersionDraft04<T, R = T, E = never> = T extends {
+export type InferJSONSchemaVersionDraft04<
+  T,
+  B = T,
+  R = T,
+  E = never
+> = T extends {
   $schema: `${infer P}://json-schema.org/draft-04/schema${infer P}`;
 }
-  ? InferJSONSchemaDraft04<T, R, E>
+  ? InferJSONSchemaDraft04<T, B, R, E>
   : E;
