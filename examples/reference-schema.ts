@@ -17,7 +17,16 @@ const schema = {
   },
 } as const;
 
-type Schema = InferJSONSchema<typeof schema>;
+type Schema = InferJSONSchema<
+  typeof schema,
+  typeof schema,
+  [
+    {
+      $id: "https://example.com/schemas/address";
+      type: "string";
+    }
+  ]
+>;
 const ref: Schema = {
   first_name: "joe",
   last_name: "doe",

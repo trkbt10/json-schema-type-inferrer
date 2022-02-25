@@ -128,6 +128,9 @@ export type GetObjectByPath<T, Root extends {}> = T extends string
     : never
   : never;
 
+type Basename<T> = T extends `${infer Protocol}//${infer LocationWithPaths}`
+  ? `${Protocol}//${Split<LocationWithPaths, "/">[0]}`
+  : never;
 export type InferReferenceSchema<T, Root, E = never> = T extends {
   $ref: infer R;
 }
@@ -149,7 +152,9 @@ export type ComposeRefTargetURIFromSchema<T, B> = T extends {
 }
   ? B extends { $id: infer Id }
     ? Id extends string
-      ? `${Join<DropLastIndex<Split<Id, "/">>, "/">}${P}`
+      ? P extends `/${infer P2}`
+        ? `${Basename<Id>}/${P2}`
+        : `${Join<DropLastIndex<Split<Id, "/">>, "/">}${P}`
       : P
     : P
   : unknown;

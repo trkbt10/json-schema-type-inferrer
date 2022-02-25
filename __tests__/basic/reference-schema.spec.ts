@@ -7,7 +7,7 @@ import {
   InferObjectSchema,
   InferReferenceSchema,
 } from "../../src/json-schema-draft-04";
-import { Mutable } from "../../src/utilities";
+import { Mutable, Split } from "../../src/utilities";
 
 describe("ReferenceSchema", () => {
   it("string type", () => {
@@ -58,6 +58,7 @@ describe("ReferenceSchema", () => {
           $ref: "B",
         },
       },
+      additionalProperties: false,
     } as const;
     type Schema = Mutable<typeof localSchema>;
     type UnifiedJSONSchemas = ConcatJSONSchemaDefinitions<
@@ -75,7 +76,7 @@ describe("ReferenceSchema", () => {
     >;
     type ComposedRefTargetURI2 = ComposeRefTargetURIFromSchema<
       {
-        $ref: "B";
+        $ref: "/B";
       },
       UnifiedJSONSchemas["#"]
     >;
@@ -83,6 +84,12 @@ describe("ReferenceSchema", () => {
       ComposedRefTargetURI2,
       UnifiedJSONSchemas
     >;
+    type Basename<T> = T extends `${infer Protocol}//${infer LocationWithPaths}`
+      ? `${Protocol}//${Split<LocationWithPaths, "/">[0]}`
+      : never;
+    const basename: Basename<"https://example.com/paths/children"> =
+      "https://example.com";
+
     const expectedURI: ComposedRefTargetURI = "https://example.com/A#/$defs/A";
     type RefSchema = InferObjectSchema<Schema, UnifiedJSONSchemas>;
   });
