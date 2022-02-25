@@ -38,7 +38,9 @@ describe("Internal Types", () => {
         },
       },
     } as const;
-    type LocalType = ConcatJSONSchemaDefinitions<typeof localSchema>;
+    type LocalType = ConcatJSONSchemaDefinitions<typeof localSchema> & {
+      "#": typeof localSchema;
+    };
     const typedLocalSchema: LocalType["#"] = localSchema;
   });
   it("GetObjectByLocalPath", () => {
@@ -56,12 +58,6 @@ describe("Internal Types", () => {
     type Schema = Mutable<typeof schema>;
     type ResolvedLocalPath = GetObjectByLocalPath<Schema, "/definitions/text">;
     const resolvedSchema: ResolvedLocalPath = schema.definitions.text;
-    type ResolvedSchema = GetObjectByLocalPath<
-      "definitions/text",
-      ConcatJSONSchemaDefinitions<
-        [typeof schema, typeof schemaB, typeof schemaA]
-      >
-    >;
     const resolveConcatedSchema: ResolvedLocalPath = schema.definitions.text;
   });
   it("GetObjectByPath", () => {
@@ -79,12 +75,14 @@ describe("Internal Types", () => {
     type Schema = Mutable<typeof schema>;
     type ResolvedLocalPath = GetObjectByPath<
       "#/definitions/text",
-      ConcatJSONSchemaDefinitions<Schema>
+      {
+        "#": Schema;
+      }
     >;
     const resolvedSchema: ResolvedLocalPath = schema.definitions.text;
 
     type ResolvedSchema = GetObjectByPath<
-      "#/definitions/text",
+      "/definitions/text",
       ConcatJSONSchemaDefinitions<
         [typeof schema, typeof schemaB, typeof schemaA]
       >

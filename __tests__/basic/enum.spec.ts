@@ -1,5 +1,5 @@
 import {
-  InferJSONSchemaType,
+  InferJSONSchema2020_12,
   InferPrimitiveJSONSchemaType,
 } from "../../src/json-schema-2020-12";
 import { InferEnumDef } from "../../src/json-schema-draft-04";
@@ -28,7 +28,7 @@ describe("Enum", () => {
     } as const;
     type Schema = Mutable<typeof schema>;
     const enums: InferPrimitiveJSONSchemaType<Schema> = 1;
-    const enums2: InferJSONSchemaType<Schema> = 1;
+    const enums2: InferJSONSchema2020_12<Schema> = 1;
     const schema2 = {
       enum: [
         "array",
@@ -42,7 +42,7 @@ describe("Enum", () => {
     } as const;
     type Schema2 = Mutable<typeof schema2>;
     const strEnums: InferPrimitiveJSONSchemaType<Schema2> = "array" as const;
-    const strEnums2: InferJSONSchemaType<Schema2> = "string";
+    const strEnums2: InferJSONSchema2020_12<Schema2> = "string";
   });
   it("nullable enum", () => {
     const schema = {
@@ -59,6 +59,6 @@ describe("Enum", () => {
     } as const;
     type Schema = Mutable<typeof schema>;
     const type: InferPrimitiveJSONSchemaType<Schema> = "array" as const;
-    const type2: InferJSONSchemaType<Schema> = null;
+    const type2: InferJSONSchema2020_12<Schema> = null;
   });
 });

@@ -1,4 +1,5 @@
 import { InferJSONSchemaDraft04 } from "../../src/json-schema-draft-04";
+import { Mutable } from "../../src/utilities";
 
 describe("anyOf", () => {
   it("object", () => {
@@ -15,7 +16,7 @@ describe("anyOf", () => {
         ],
       },
     } as const;
-    type Schema = InferJSONSchemaDraft04<typeof schema>;
+    type Schema = InferJSONSchemaDraft04<Mutable<typeof schema>>;
     const type: Schema[] = [
       {
         item: true,
@@ -46,6 +47,6 @@ describe("anyOf", () => {
         ],
       },
     } as const;
-    const type: InferJSONSchemaDraft04<typeof schema> = ["1", true];
+    const type: InferJSONSchemaDraft04<Mutable<typeof schema>> = ["1", true];
   });
 });

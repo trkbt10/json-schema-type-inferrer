@@ -1,4 +1,5 @@
 import { InferJSONSchemaDraft04 } from "../../src/json-schema-draft-04";
+import { Mutable } from "../../src/utilities";
 describe("allOf", () => {
   it("array", () => {
     const schema = {
@@ -14,6 +15,6 @@ describe("allOf", () => {
         ],
       },
     } as const;
-    const type: InferJSONSchemaDraft04<typeof schema> = ["1", null];
+    const type: InferJSONSchemaDraft04<Mutable<typeof schema>> = ["1", null];
   });
 });
