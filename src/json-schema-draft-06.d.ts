@@ -4,6 +4,7 @@
  */
 
 import type {
+  ConcatJSONSchemaDefinitions,
   InferArraySchema,
   InferDefaultValue,
   InferForValidationSchema,
@@ -22,20 +23,20 @@ export type WithSchemaConditions<S, T> = InferConstantValue<
   S,
   InferDefaultValue<S, InferNullable<S, T>>
 >;
-export type InferJSONSchemaType<T, B = {}, R = B> = WithSchemaConditions<
+export type InferJSONSchemaType<T, R> = WithSchemaConditions<
   T,
-  | InferForValidationSchema<T, B, R>
+  | InferForValidationSchema<T, R>
   | InferPrimitiveJSONSchemaType<T>
-  | InferObjectSchema<T, B, R>
-  | InferArraySchema<T, B, R>
-  | InferReferenceSchema<T, B, R>
+  | InferObjectSchema<T, R>
+  | InferArraySchema<T, R>
+  | InferReferenceSchema<T, R>
 >;
-export type InferJSONSchemaDraft06<T, R = T> = T extends {}
-  ? InferJSONSchemaType<T, T, R>
-  : {};
-
-export type InferJSONSchemaVersionDraft06<T, R, E> = T extends {
-  $schema: `${infer P}://json-schema.org/draft-06/schema${infer P}`;
+export type InferJSONSchemaDraft06<T, Base = T, Root = T> = InferJSONSchemaType<
+  T,
+  ConcatJSONSchemaDefinitions<Root> & { "#": Base }
+>;
+export type InferJSONSchemaVersionDraft06<T, B, R, E> = T extends {
+  $schema: `${infer P}://json-schema.org/draft-06/schema${infer Q}`;
 }
-  ? InferJSONSchemaType<T, T, R>
+  ? InferJSONSchemaDraft06<T, B, R>
   : E;

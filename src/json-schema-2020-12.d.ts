@@ -1,4 +1,5 @@
 import {
+  ConcatJSONSchemaDefinitions,
   InferBooleanSchema,
   InferEnumDef,
   InferForValidationSchema,
@@ -21,23 +22,18 @@ export type InferTupleSchema<T, B = {}, Root = B> =
   }
     ? // Closed tuple
       T extends { items: false }
-      ? InferTupleItemSchema<U, B, Root>
+      ? InferTupleItemSchema<U, Root>
       : // Tuple with constrained additional items
       T extends { items: infer A }
-      ? [...InferTupleItemSchema<U, B, Root>, InferJSONSchemaType<A, B, Root>]
-      : [...InferTupleItemSchema<U, B, Root>, ...any[]]
+      ? [...InferTupleItemSchema<U, Root>, InferJSONSchemaType<A, Root>]
+      : [...InferTupleItemSchema<U, Root>, ...any[]]
     : never;
-export type InferArraySchema<
-  T,
-  Base extends {},
-  Root = Base,
-  E = never
-> = T extends {
+export type InferArraySchema<T, Root, E = never> = T extends {
   type: "array";
 }
   ? T extends { items: infer I }
     ? I extends {}
-      ? InferJSONSchemaType<I, Base, Root>[]
+      ? InferJSONSchemaType<I, Root>[]
       : E
     : E
   : E;
@@ -60,21 +56,27 @@ export type InferPrimitiveJSONSchemaType<T> =
   | InferStringSchema<T>
   | InferNumberSchema<T>
   | InferNullSchema<T>;
-export type InferJSONSchemaType<T, B = T, Root = B> = WithSchemaConditions<
+export type InferJSONSchemaType<T, Root> = WithSchemaConditions<
   T,
-  | InferForValidationSchema<T, B, Root>
+  | InferForValidationSchema<T, Root>
   | InferPrimitiveJSONSchemaType<T>
-  | InferObjectSchema<T, B, Root>
-  | InferTupleSchema<T, B, Root>
-  | InferArraySchema<T, B, Root>
-  | InferReferenceSchema<T, B, Root>
+  | InferObjectSchema<T, Root>
+  | InferTupleSchema<T, Root>
+  | InferArraySchema<T, Root>
+  | InferReferenceSchema<T, Root>
 >;
+export type InferJSONSchema2020_12<T, Base = T, R = T> = InferJSONSchemaType<
+  T,
+  ConcatJSONSchemaDefinitions<R> & { "#": Base }
+>;
+
 export type InferJSONSchemaVersionDraft2020_12<
   T,
-  Root = {},
+  Base,
+  Root,
   E = never
 > = T extends {
   $schema: `${infer P}://json-schema.org/draft/2020-12/schema${infer Q}`;
 }
-  ? InferJSONSchemaType<T, T, Root>
+  ? InferJSONSchema2020_12<T, Base, Root>
   : E;

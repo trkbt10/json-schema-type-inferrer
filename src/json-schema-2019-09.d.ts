@@ -4,6 +4,7 @@
  */
 
 import type {
+  ConcatJSONSchemaDefinitions,
   InferArraySchema,
   InferForValidationSchema,
   InferObjectSchema,
@@ -41,7 +42,7 @@ export type InferDependentRequired<T, V> = T extends {
     : V
   : V;
 
-export type InferDependentSchemas<T, V, Base, Root> = T extends {
+export type InferDependentSchemas<T, V, Root = {}> = T extends {
   properties: {};
   dependentSchemas: {};
 }
@@ -50,39 +51,33 @@ export type InferDependentSchemas<T, V, Base, Root> = T extends {
     }
     ? U extends { properties: {} }
       ? Omit<V, keyof Omit<V, keyof T["dependentSchemas"]>> &
-          (InferObjectPropertiesSchema<U, Base, Root> & {
+          (InferObjectPropertiesSchema<U, Root> & {
             [P in keyof T["dependentSchemas"]]: V[P];
           })
       : V
     : V
   : V;
 
-export type InferJSONSchemaType<
-  T,
-  Base extends {},
-  Root extends {}
-> = InferDependentSchemas<
+export type InferJSONSchemaType<T, Root extends {}> = InferDependentSchemas<
   T,
   WithSchemaConditions<
     T,
-    | InferForValidationSchema<T, Base, Root>
+    | InferForValidationSchema<T, Root>
     | InferPrimitiveJSONSchemaType<T>
-    | InferDependentRequired<T, InferObjectSchema<T, Base, Root>>
-    | InferArraySchema<T, Base, Root>
-    | InferReferenceSchema<T, Base, Root>
+    | InferDependentRequired<T, InferObjectSchema<T, Root>>
+    | InferArraySchema<T, Root>
+    | InferReferenceSchema<T, Root>
   >,
-  Base,
   Root
 >;
 
-export type InferJSONSchema201909<T, Root extends {}> = InferJSONSchemaType<
+export type InferJSONSchema201909<T, Base = T, R = T> = InferJSONSchemaType<
   T,
-  T,
-  Root
+  ConcatJSONSchemaDefinitions<R> & { "#": Base }
 >;
 
-export type InferJSONSchemaVersion201909<T, R extends {}, E> = T extends {
+export type InferJSONSchemaVersion201909<T, Base, Root, E> = T extends {
   $schema: `${infer P}://json-schema.org/2019-09/schema${infer P}`;
 }
-  ? InferJSONSchema201909<T, R>
+  ? InferJSONSchema201909<T, Base, Root>
   : E;

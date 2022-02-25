@@ -1,7 +1,8 @@
 import { InferJSONSchemaDraft06 } from "../../src/json-schema-draft-06";
 import { schema } from "./json-schema-draft-06";
+import { Mutable } from "../../src/utilities";
 it("JSONSchema Draft-06", () => {
-  type Schema = InferJSONSchemaDraft06<typeof schema>;
+  type Schema = InferJSONSchemaDraft06<Mutable<typeof schema>>;
   const type: Schema = {
     $id: "http://example.com/example.json",
     $schema: "http://json-schema.org/draft/2020-12/schema",

@@ -1,8 +1,9 @@
 import type { InferJSONSchemaDraft04 } from "../../src/json-schema-draft-04";
+import { Mutable } from "../../src/utilities";
 import { schema } from "./json-schema-draft-04";
 
 describe("JSONSchemaDraft04", () => {
-  type JSONSchemaDraft04Schema = InferJSONSchemaDraft04<typeof schema>;
+  type JSONSchemaDraft04Schema = InferJSONSchemaDraft04<Mutable<typeof schema>>;
   it("should be match jsonschem draft 04", () => {
     const valid: JSONSchemaDraft04Schema = {
       id: "http://json-schema.org/draft-04/schema#",
@@ -52,7 +53,8 @@ describe("JSONSchemaDraft04", () => {
   });
   it("positiveIntegerDefault0", () => {
     const positiveIntegerDefault0: InferJSONSchemaDraft04<
-      typeof schema.definitions["positiveIntegerDefault0"]
+      Mutable<typeof schema.definitions["positiveIntegerDefault0"]>,
+      Mutable<typeof schema>
     > = 0;
   });
   it("stringArray", () => {
