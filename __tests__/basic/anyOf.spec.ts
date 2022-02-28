@@ -1,5 +1,10 @@
-import { InferJSONSchemaDraft04 } from "../../src/json-schema-draft-04";
-import { Mutable } from "../../src/utilities";
+import {
+  InferJSONSchemaDraft04,
+  InferAdditionalPropertiesSchema,
+  InferJSONSchemaType,
+  InferForValidationSchema,
+  MapForAnyOfProperties,
+} from "../../src/json-schema-draft-04";
 
 describe("anyOf", () => {
   it("object", () => {
@@ -16,7 +21,19 @@ describe("anyOf", () => {
         ],
       },
     } as const;
-    type Schema = InferJSONSchemaDraft04<Mutable<typeof schema>>;
+    type Schema = InferJSONSchemaDraft04<typeof schema>;
+    type AnyOf = MapForAnyOfProperties<
+      typeof schema["additionalProperties"]["anyOf"],
+      typeof schema
+    >;
+    type AnyOf2 = InferForValidationSchema<
+      typeof schema["additionalProperties"],
+      {}
+    >;
+    type AdditionalProperties = InferAdditionalPropertiesSchema<
+      typeof schema,
+      {}
+    >;
     const type: Schema[] = [
       {
         item: true,
@@ -47,6 +64,6 @@ describe("anyOf", () => {
         ],
       },
     } as const;
-    const type: InferJSONSchemaDraft04<Mutable<typeof schema>> = ["1", true];
+    const type: InferJSONSchemaDraft04<typeof schema> = ["1", true];
   });
 });

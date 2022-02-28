@@ -30,4 +30,4 @@ export type InferJSONSchema<
   T,
   Base = T,
   R = {}
-> = ResolveJSONSchemaInferrerBy$Schema<Mutable<T>, Mutable<Base>, Mutable<R>>;
+> = ResolveJSONSchemaInferrerBy$Schema<T, Base, R>;

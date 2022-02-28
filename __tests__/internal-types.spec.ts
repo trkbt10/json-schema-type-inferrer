@@ -55,7 +55,7 @@ describe("Internal Types", () => {
         $ref: "#/definitions/text",
       },
     } as const;
-    type Schema = Mutable<typeof schema>;
+    type Schema = typeof schema;
     type ResolvedLocalPath = GetObjectByLocalPath<Schema, "/definitions/text">;
     const resolvedSchema: ResolvedLocalPath = schema.definitions.text;
     const resolveConcatedSchema: ResolvedLocalPath = schema.definitions.text;
@@ -72,7 +72,7 @@ describe("Internal Types", () => {
         $ref: "#/definitions/text",
       },
     } as const;
-    type Schema = Mutable<typeof schema>;
+    type Schema = typeof schema;
     type ResolvedLocalPath = GetObjectByPath<
       "#/definitions/text",
       {

@@ -14,18 +14,20 @@ import type {
   InferReferenceSchema,
 } from "./json-schema-draft-04";
 
-export type InferExampleValues<T, V> = T extends { example: infer E }
+export type InferExampleValues<T, V> = T extends { readonly example: infer E }
   ? E | V
   : V;
 
-export type InferConstantValue<T, V> = T extends { const: infer D } ? D : V;
-export type InferReadOnly<T, V> = T extends { readOnly: true }
+export type InferConstantValue<T, V> = T extends { readonly const: infer D }
+  ? D
+  : V;
+export type InferReadOnly<T, V> = T extends { readonly readOnly: true }
   ? V extends {}
     ? Readonly<V>
     : V
   : V;
 
-export type InferWriteOnly<T, V> = T extends { writeOnly: true }
+export type InferWriteOnly<T, V> = T extends { readonly writeOnly: true }
   ? V extends {}
     ? V
     : V
@@ -48,7 +50,7 @@ export type InferJSONSchemaDraft07<T, Base = T, R = T> = InferJSONSchemaType<
 >;
 
 export type InferJSONSchemaVersionDraft07<T, Base, R, E> = T extends {
-  $schema: `${infer P}://json-schema.org/draft-07/schema${infer P}`;
+  readonly $schema: `${infer P}://json-schema.org/draft-07/schema${infer P}`;
 }
   ? InferJSONSchemaDraft07<T, Base, R>
   : E;

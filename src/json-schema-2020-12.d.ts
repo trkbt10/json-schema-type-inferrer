@@ -18,7 +18,7 @@ import { WithSchemaConditions } from "./json-schema-draft-07";
 export type InferTupleSchema<T, B = {}, Root = B> =
   // Infer tuple
   T extends {
-    prefixItems: [...infer U];
+    readonly prefixItems: [...infer U];
   }
     ? // Closed tuple
       T extends { items: false }
@@ -29,7 +29,7 @@ export type InferTupleSchema<T, B = {}, Root = B> =
       : [...InferTupleItemSchema<U, Root>, ...any[]]
     : never;
 export type InferArraySchema<T, Root, E = never> = T extends {
-  type: "array";
+  readonly type: "array";
 }
   ? T extends { items: infer I }
     ? I extends {}
@@ -44,7 +44,7 @@ export type UnpackMultipleTypes<T extends any[]> = T extends [
   ? InferPrimitiveJSONSchemaType<{ type: U }> | UnpackMultipleTypes<U2>
   : never;
 export type InferMultipleTypeSchema<T, E = never> = T extends {
-  type: [...infer U];
+  readonly type: [...infer U];
 }
   ? UnpackMultipleTypes<U>
   : E;
@@ -76,7 +76,7 @@ export type InferJSONSchemaVersionDraft2020_12<
   Root,
   E = never
 > = T extends {
-  $schema: `${infer P}://json-schema.org/draft/2020-12/schema${infer Q}`;
+  readonly $schema: `${infer P}://json-schema.org/draft/2020-12/schema${infer Q}`;
 }
   ? InferJSONSchema2020_12<T, Base, Root>
   : E;

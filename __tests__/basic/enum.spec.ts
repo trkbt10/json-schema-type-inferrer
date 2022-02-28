@@ -26,8 +26,9 @@ describe("Enum", () => {
       type: "number",
       enum: [1, 2, 3],
     } as const;
-    type Schema = Mutable<typeof schema>;
-    const enums: InferPrimitiveJSONSchemaType<Schema> = 1;
+    type Schema = typeof schema;
+    const enums0: InferEnumDef<Schema, {}> = 1;
+    const enums1: InferPrimitiveJSONSchemaType<Schema> = 1;
     const enums2: InferJSONSchema2020_12<Schema> = 1;
     const schema2 = {
       enum: [
@@ -40,7 +41,7 @@ describe("Enum", () => {
         "string",
       ],
     } as const;
-    type Schema2 = Mutable<typeof schema2>;
+    type Schema2 = typeof schema2;
     const strEnums: InferPrimitiveJSONSchemaType<Schema2> = "array" as const;
     const strEnums2: InferJSONSchema2020_12<Schema2> = "string";
   });
@@ -57,7 +58,7 @@ describe("Enum", () => {
       ],
       nullable: true,
     } as const;
-    type Schema = Mutable<typeof schema>;
+    type Schema = typeof schema;
     const type: InferPrimitiveJSONSchemaType<Schema> = "array" as const;
     const type2: InferJSONSchema2020_12<Schema> = null;
   });

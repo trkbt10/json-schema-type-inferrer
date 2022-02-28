@@ -1,18 +1,14 @@
-import type {
-  Unpacked,
-  Get,
-  Split,
-  Join,
-  DropLastIndex,
-  Mutable,
-} from "./utilities";
+import type { Unpacked, Get, Split, Join, DropLastIndex } from "./utilities";
+import { Mutable } from "./utilities";
 
 export type InferNumberSchema<T, E = never> = T extends {
-  type: "number" | "integer";
+  readonly type: "number" | "integer";
 }
   ? number
   : E;
-export type InferEnumDef<T, E = never> = T extends { enum: [...infer U] }
+export type InferEnumDef<T, E = never> = T extends {
+  readonly enum: readonly [...infer U];
+}
   ? Unpacked<U>
   : E;
 
@@ -26,16 +22,18 @@ export type InferAnySchema<T> = T extends {
   ? never
   : T;
 export type InferNullSchema<T, E = never> = T extends {
-  type: "null";
+  readonly type: "null";
 }
   ? null
   : E;
 export type InferBooleanSchema<T, E = never> = T extends {
-  type: "boolean";
+  readonly type: "boolean";
 }
   ? boolean
   : E;
-export type InferStringSchema<T, E = never> = T extends { type: "string" }
+export type InferStringSchema<T, E = never> = T extends {
+  readonly type: "string";
+}
   ? string
   : E;
 export type InferObjectPropertiesSchemaType<
@@ -43,7 +41,7 @@ export type InferObjectPropertiesSchemaType<
   Root extends {},
   E = never
 > = T extends {
-  [key: string]: any;
+  readonly [key: string]: any;
 }
   ? { [K in keyof T]: InferJSONSchemaType<T[K], Root> }
   : E;
@@ -56,13 +54,24 @@ export type InferAdditionalPropertiesSchema<
   ? T extends true
     ? { [key: string]: any }
     : E
-  : { [key: string]: InferJSONSchemaType<T, Root> };
+  : T extends { readonly additionalProperties: infer U }
+  ? { [key: string]: InferJSONSchemaType<U, Root> }
+  : E;
 
-export type InferRequiredProperties<T extends {}, Required extends keyof T> = {
-  [R in Required]: T[R];
-} & {
-  [O in Exclude<keyof T, Required>]?: T[O];
-};
+export type InferRequiredProperties<V extends {}, T extends {}> = T extends {
+  readonly required: readonly (keyof V)[];
+}
+  ? {
+      [K in T["required"][number]]: V[K];
+    } & {
+      [O in Exclude<keyof V, T["required"][number]>]?: V[O];
+    }
+  : V;
+// {
+//   [R in Req]: T[R];
+// } & {
+//   [O in Exclude<keyof T, Req>]?: T[O];
+// };
 export type InferRequiredKeys<
   P extends {},
   R extends (keyof Partial<P>)[]
@@ -72,33 +81,28 @@ export type InferObjectPropertiesSchema<
   Root extends {},
   E = never
 > = T extends {
-  properties?: infer P;
+  readonly properties?: infer P;
 }
-  ? P extends { [key: string]: any }
-    ? T extends { required: string[] }
-      ? InferRequiredProperties<
-          InferObjectPropertiesSchemaType<P, Root, E>,
-          InferRequiredKeys<P, T["required"]>
-        >
-      : InferObjectPropertiesSchemaType<P, Root, E>
-    : {}
+  ? P extends { readonly [key: string]: any }
+    ? InferObjectPropertiesSchemaType<P, Root, E>
+    : E
   : E;
 
 export type InferObjectSchema<T, Root extends {}, E = never> = T extends {
-  type: "object";
-  properties?: infer P;
-  additionalProperties?: infer AP;
+  readonly type: "object";
 }
-  ?
+  ? InferRequiredProperties<
       | InferObjectPropertiesSchema<T, Root, E>
-      | InferAdditionalPropertiesSchema<AP, Root, E>
+      | InferAdditionalPropertiesSchema<T, Root, E>,
+      T
+    >
   : E;
 export type InferDependentRequired<T, V> = T extends {
-  properties: {};
-  dependencies: {};
+  readonly properties: {};
+  readonly dependencies: {};
 }
   ? T["dependencies"] extends {
-      [key in keyof Partial<T["properties"]>]: (infer DK)[];
+      readonly [key in keyof Partial<T["properties"]>]: readonly (infer DK)[];
     }
     ? DK extends keyof T["properties"]
       ?
@@ -148,9 +152,9 @@ export type InferReferenceSchema<T, Root, E = never> = T extends {
   : E;
 
 export type ComposeRefTargetURIFromSchema<T, B> = T extends {
-  $ref: `${infer P}`;
+  readonly $ref: `${infer P}`;
 }
-  ? B extends { $id: infer Id }
+  ? B extends { readonly $id: infer Id }
     ? Id extends string
       ? P extends `/${infer P2}`
         ? `${Basename<Id>}/${P2}`
@@ -159,16 +163,16 @@ export type ComposeRefTargetURIFromSchema<T, B> = T extends {
     : P
   : unknown;
 
-export type InferTupleItemSchema<T extends any[], Root extends {}> = T extends [
-  infer U,
-  ...infer U2
-]
+export type InferTupleItemSchema<
+  T extends any[],
+  Root extends {}
+> = T extends readonly [infer U, ...infer U2]
   ? [InferJSONSchemaType<U, Root>, ...InferTupleItemSchema<U2, Root>]
   : [];
 export type InferArraySchema<T, Root extends {}, E = never> = T extends {
-  type: "array";
+  readonly type: "array";
 }
-  ? T extends { items: infer I }
+  ? T extends { readonly items: infer I }
     ? I extends {}
       ? InferJSONSchemaType<I, Root>[]
       : I extends [...any]
@@ -176,7 +180,11 @@ export type InferArraySchema<T, Root extends {}, E = never> = T extends {
       : E
     : E
   : E;
-export type InferNullable<T, V> = T extends { nullable: true } ? null | V : V;
+export type InferNullable<T extends {}, V = never> = T extends {
+  readonly nullable: true;
+}
+  ? null | V
+  : V;
 
 export type UnpackMultipleTypes<T extends any[]> = T extends [
   infer U,
@@ -185,7 +193,7 @@ export type UnpackMultipleTypes<T extends any[]> = T extends [
   ? InferPrimitiveJSONSchemaType<{ type: U }> | UnpackMultipleTypes<U2>
   : never;
 export type InferMultipleTypeSchema<T, E = never> = T extends {
-  type: [...infer U];
+  readonly type: readonly [...infer U];
 }
   ? UnpackMultipleTypes<U>
   : E;
@@ -197,39 +205,42 @@ export type InferPrimitiveJSONSchemaType<T> =
   | InferStringSchema<T>
   | InferNumberSchema<T>
   | InferNullSchema<T>;
-export type ConcatTypes<T extends any[]> = T extends [infer U, ...infer U2]
+export type ConcatTypes<T extends readonly any[]> = T extends readonly [
+  infer U,
+  ...infer U2
+]
   ? U & ConcatTypes<U2>
   : {};
 export type MapForAllOfProperties<
-  T extends any[],
+  T extends readonly any[],
   Root extends {}
 > = InferJSONSchemaType<ConcatTypes<T>, Root>;
 export type MapForAnyOfProperties<
-  T extends any[],
+  T extends readonly any[],
   Root extends {}
-> = T extends [infer U, ...infer U2]
+> = T extends readonly [infer U, ...infer U2]
   ? InferJSONSchemaType<U, Root> | MapForAnyOfProperties<U2, Root>
   : never;
 export type MapForOneOfProperties<
-  T extends any[],
+  T extends readonly any[],
   Root extends {}
-> = T extends [infer U, ...infer U2]
+> = T extends readonly [infer U, ...infer U2]
   ? InferJSONSchemaType<U, Root> | MapForOneOfProperties<U2, Root>
   : never;
 
 export type InferForValidationSchema<T extends {}, Root extends {}> =
   | (T extends {
-      allOf: any[];
+      readonly allOf: readonly any[];
     }
       ? MapForAllOfProperties<T["allOf"], Root>
       : never)
   | (T extends {
-      anyOf: any[];
+      readonly anyOf: readonly any[];
     }
       ? MapForAnyOfProperties<T["anyOf"], Root>
       : never)
   | (T extends {
-      oneOf: any[];
+      readonly oneOf: readonly any[];
     }
       ? MapForOneOfProperties<T["oneOf"], Root>
       : never);
@@ -241,15 +252,17 @@ export type InferJSONSchemaType<T extends {}, Root = {}> = InferDefaultValue<
   T,
   InferNullable<
     T,
-    | InferForValidationSchema<T, Root>
     | InferPrimitiveJSONSchemaType<T>
     | InferDependentRequired<T, InferObjectSchema<T, Root>>
     | InferArraySchema<T, Root>
     | InferReferenceSchema<T, Root>
+    | InferForValidationSchema<T, Root>
   >
 >;
 export type ConcatJSONSchemas<T extends {}[]> = T extends [infer A, ...infer B]
-  ? (A extends { $id: string } ? { [K in A["$id"]]: Mutable<A> } : {}) &
+  ? (A extends { readonly $id: string }
+      ? { readonly [K in A["$id"]]: A }
+      : {}) &
       (B extends any[] ? ConcatJSONSchemas<B> : {})
   : {};
 export type ConcatJSONSchemaDefinitions<R> = R extends any[]
@@ -272,7 +285,7 @@ export type InferJSONSchemaVersionDraft04<
   R = T,
   E = never
 > = T extends {
-  $schema: `${infer P}://json-schema.org/draft-04/schema${infer P}`;
+  readonly $schema: `${infer P}://json-schema.org/draft-04/schema${infer P}`;
 }
   ? InferJSONSchemaDraft04<T, B, R, E>
   : E;

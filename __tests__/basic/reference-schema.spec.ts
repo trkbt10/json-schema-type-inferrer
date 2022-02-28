@@ -58,7 +58,6 @@ describe("ReferenceSchema", () => {
           $ref: "B",
         },
       },
-      additionalProperties: false,
     } as const;
     type Schema = Mutable<typeof localSchema>;
     type UnifiedJSONSchemas = ConcatJSONSchemaDefinitions<

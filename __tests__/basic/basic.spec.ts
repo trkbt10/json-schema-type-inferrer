@@ -3,22 +3,25 @@ import { InferJSONSchema } from "../../src/json-schema-type-inferrer";
 
 describe("Basic", () => {
   it("Numeric", () => {
-    const data: InferJSONSchema<{
-      type: "number";
-    }> = 0;
+    const schema = {
+      type: "number",
+    } as const;
+    const data: InferJSONSchema<typeof schema> = 0;
   });
   it("String", () => {
-    const data: InferJSONSchema<{
-      type: "string";
-    }> = "string";
+    const schema = {
+      type: "string",
+    } as const;
+    const data: InferJSONSchema<typeof schema> = "string";
   });
   it("Array", () => {
-    const data: InferJSONSchema<{
-      type: "array";
+    const schema = {
+      type: "array",
       items: {
-        type: "string";
-      };
-    }> = ["a", "b"];
+        type: "string",
+      },
+    } as const;
+    const data: InferJSONSchema<typeof schema> = ["a", "b"];
   });
   it("Object JSONSchema", () => {
     const data: InferJSONSchema<{
@@ -31,11 +34,13 @@ describe("Basic", () => {
     }> = { a: "string" };
   });
   it("Multiple type JSONSchema", () => {
-    const str: InferMultipleTypeSchema<{
-      type: ["string", "number"];
-    }> = "string";
-    const num: InferMultipleTypeSchema<{
-      type: ["string", "number"];
-    }> = 0;
+    const schema = {
+      type: ["string", "number"],
+    } as const;
+    const str: InferMultipleTypeSchema<typeof schema> = "string";
+    const schema2 = {
+      type: ["string", "number"],
+    } as const;
+    const num: InferMultipleTypeSchema<typeof schema2> = 0;
   });
 });
