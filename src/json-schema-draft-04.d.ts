@@ -67,11 +67,7 @@ export type InferRequiredProperties<V extends {}, T extends {}> = T extends {
       [O in Exclude<keyof V, T["required"][number]>]?: V[O];
     }
   : V;
-// {
-//   [R in Req]: T[R];
-// } & {
-//   [O in Exclude<keyof T, Req>]?: T[O];
-// };
+
 export type InferRequiredKeys<
   P extends {},
   R extends (keyof Partial<P>)[]
