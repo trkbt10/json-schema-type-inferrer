@@ -1,5 +1,9 @@
-import type { Unpacked, Get, Split, Join, DropLastIndex } from "./utilities";
-import { Mutable } from "./utilities";
+import {
+  ComposeRefTargetURIFromSchema,
+  GetObjectByLocalPath,
+  GetObjectByPath,
+} from "./json-schema-utilities";
+import type { Get, Unpacked } from "./utilities";
 
 export type InferNumberSchema<T, E = never> = T extends {
   readonly type: "number" | "integer";
@@ -113,24 +117,7 @@ export type InferDependentRequired<T, V> = T extends {
       : V
     : V
   : V;
-export type GetObjectByLocalPath<T, K> = T extends {}
-  ? K extends `/${infer P}`
-    ? Get<T, Split<P>>
-    : never
-  : never;
-export type GetObjectByPath<T, Root extends {}> = T extends string
-  ? T extends `#${infer L}`
-    ? GetObjectByLocalPath<Get<Root, ["#"]>, L>
-    : T extends `${infer B}#${infer L}`
-    ? GetObjectByLocalPath<Get<Root, [B]>, L>
-    : T extends string
-    ? Get<Root, [T]>
-    : never
-  : never;
 
-type Basename<T> = T extends `${infer Protocol}//${infer LocationWithPaths}`
-  ? `${Protocol}//${Split<LocationWithPaths, "/">[0]}`
-  : never;
 export type InferReferenceSchema<T, Root, E = never> = T extends {
   $ref: infer R;
 }
@@ -146,18 +133,6 @@ export type InferReferenceSchema<T, Root, E = never> = T extends {
         Root
       >
   : E;
-
-export type ComposeRefTargetURIFromSchema<T, B> = T extends {
-  readonly $ref: `${infer P}`;
-}
-  ? B extends { readonly $id: infer Id }
-    ? Id extends string
-      ? P extends `/${infer P2}`
-        ? `${Basename<Id>}/${P2}`
-        : `${Join<DropLastIndex<Split<Id, "/">>, "/">}${P}`
-      : P
-    : P
-  : unknown;
 
 export type InferTupleItemSchema<
   T extends any[],

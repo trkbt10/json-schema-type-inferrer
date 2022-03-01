@@ -3,6 +3,11 @@ export type Unpacked<T> = T extends (infer U)[] ? U : T;
 export type Mutable<T> = {
   -readonly [K in keyof T]: Mutable<T[K]>;
 };
+export type IsIdentical<T, U> = [T] extends [U]
+  ? [U] extends [T]
+    ? true
+    : false
+  : false;
 export type Join<T extends any[], S extends string> = T extends [
   infer U,
   ...infer U2
@@ -39,3 +44,8 @@ export type Get<
 export type DropLastIndex<T extends string[]> = T extends [...infer U, infer V]
   ? U
   : never;
+
+export type Basename<T> =
+  T extends `${infer Protocol}//${infer LocationWithPaths}`
+    ? `${Protocol}//${Split<LocationWithPaths, "/">[0]}`
+    : never;
